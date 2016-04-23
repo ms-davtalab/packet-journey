@@ -1661,13 +1661,19 @@ init_lcore_rx_queues(void)
 static void
 setup_lpm(int socketid)
 {
-	struct rte_lpm6_config config;
+	struct rte_lpm_config config;
+	struct rte_lpm6_config config6;
 	char s[64];
 
 	/* create the LPM table */
 	snprintf(s, sizeof(s), "IPV4_L3FWD_LPM_%d", socketid);
+	
+	config.max_rules = IPV4_L3FWD_LPM_MAX_RULES;
+	config.number_tbl8s = 256;
+    config.flags = 0;
+    
 	ipv4_pktj_lookup_struct[socketid] =
-	    rte_lpm_create(s, socketid, IPV4_L3FWD_LPM_MAX_RULES, 0);
+	    rte_lpm_create(s, socketid, &config);
 	if (ipv4_pktj_lookup_struct[socketid] == NULL)
 		rte_exit(EXIT_FAILURE, "Unable to create the pktj LPM table"
 				       " on socket %d\n",
@@ -1676,11 +1682,11 @@ setup_lpm(int socketid)
 	/* create the LPM6 table */
 	snprintf(s, sizeof(s), "IPV6_L3FWD_LPM_%d", socketid);
 
-	config.max_rules = IPV6_L3FWD_LPM_MAX_RULES;
-	config.number_tbl8s = IPV6_L3FWD_LPM_NUMBER_TBL8S;
-	config.flags = 0;
+	config6.max_rules = IPV6_L3FWD_LPM_MAX_RULES;
+	config6.number_tbl8s = IPV6_L3FWD_LPM_NUMBER_TBL8S;
+	config6.flags = 0;
 	ipv6_pktj_lookup_struct[socketid] =
-	    rte_lpm6_create(s, socketid, &config);
+	    rte_lpm6_create(s, socketid, &config6);
 	if (ipv6_pktj_lookup_struct[socketid] == NULL)
 		rte_exit(EXIT_FAILURE, "Unable to create the pktj LPM6 table"
 				       " on socket %d\n",
